@@ -20,7 +20,7 @@
 1. 打开 Navicat 或 MySQL 命令行工具。
 2. 新建一个数据库，命名为 `sgs`（字符集建议选 `utf8mb4`）。
 3. 在 `sgs` 数据库下执行以下 SQL 语句建表：
-
+```sql
 CREATE TABLE `sys_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `user_no` varchar(50) NOT NULL COMMENT '工号/学号',
@@ -51,19 +51,7 @@ private static final String URL =
 4. 点击运行按钮启动服务器。
 5. 在浏览器中访问：`http://localhost:8080/StudentGradeSystem/user_list.html`
 
-## 📂 项目结构
 
-StudentGradeSystem/
-├── src/main/java/
-│   ├── User.java        # 实体类
-│   ├── UserDao.java     # 数据库操作封装
-│   ├── add.java         # 处理添加请求
-│   ├── delete.java      # 处理删除请求
-│   ├── modify.java      # 处理修改请求
-│   └── query.java       # 处理查询请求
-├── web/
-│   ├── index.jsp   
-│   ├── user_list.html   # 用户列表（前端页面）
 │   ├── user_add.html    # 添加用户（前端页面）
 │   └── user_modify.html # 修改用户（前端页面）
 └── pom.xml              # Maven 依赖配置

@@ -44,3 +44,4 @@ CREATE TABLE `sys_user` (
    - 将 `Application context` 设置为 `/StudentGradeSystem`。
 4. 点击运行按钮启动服务器。
 5. 在浏览器中访问：`http://localhost:8080/StudentGradeSystem/user_list.html`
+6. 测试

@@ -1,6 +1,8 @@
 在idea上运行，tomcat版本为Tomcat 10.1.42
 使用root用户登录，密码设为123，可在UserDao中修改为自己使用的用户和密码
 新建数据库sgs，并在查询中输入以下SQL语句建立数据库：
+
+
 CREATE TABLE `sys_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `user_no` varchar(50) NOT NULL COMMENT '工号/学号',

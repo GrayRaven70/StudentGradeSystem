@@ -18,12 +18,16 @@ public class AuthFilter implements Filter {
         HttpSession session = req.getSession(false);
 
         // 检查 Session 里有没有 currentUser 标记
-        if (false) {
+        if (session != null && session.getAttribute("currentUser") != null) {
+            HttpServletResponse httpResp = (HttpServletResponse) response;
+            httpResp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
+            httpResp.setHeader("Pragma", "no-cache"); // HTTP 1.0
+            httpResp.setDateHeader("Expires", 0); // Proxies
             // 已登录，放行
             chain.doFilter(request, response);
         } else {
             // 未登录，重定向到登录页
-            resp.sendRedirect(req.getContextPath() + "/admin_login.jsp");
+            resp.sendRedirect(req.getContextPath() + "/index.jsp");
         }
     }
 }

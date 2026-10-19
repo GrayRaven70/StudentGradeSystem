@@ -16,6 +16,6 @@ public class LogoutServlet extends HttpServlet {
             session.invalidate();
         }
         // 退回登录页
-        response.sendRedirect(request.getContextPath() + "/admin_login.jsp");
+        response.sendRedirect(request.getContextPath() + "/index.jsp");
     }
 }

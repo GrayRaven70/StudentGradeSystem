@@ -8,7 +8,7 @@ public class UserDao {
 
     // 数据库连接信息（保持你原来的端口和账号密码）
     private static final String URL =
-            "jdbc:mysql://localhost:3366/sgs?user=root&password=123&useUnicode=true&characterEncoding=UTF-8";
+            "jdbc:mysql://localhost:端口号/sgs?user=用户名&password=密码&useUnicode=true&characterEncoding=UTF-8";
 
     static {
         try {

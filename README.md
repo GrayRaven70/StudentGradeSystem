@@ -31,7 +31,7 @@ CREATE TABLE `sys_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_user_no` (`user_no`) COMMENT '工号学号唯一'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表';
-
+```
 
 ### 3. 修改数据库连接信息
 打开项目中的 `src/main/java/UserDao.java` 文件，找到以下代码：

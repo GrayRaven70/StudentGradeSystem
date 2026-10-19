@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>添加用户信息</title>
+</head>
+<body>
+
+<form action="user_add" id="add_record_form" name="add_record_form" method="post">
+    工号/学号：<input type="text" id="user_no" name="user_no" required><br><br>
+    姓名：<input type="text" id="real_name" name="real_name" required><br><br>
+    用户组：
+    <select id="user_group" name="user_group">
+        <option value="学生">学生</option>
+        <option value="教师">教师</option>
+        <option value="管理员">管理员</option>
+    </select><br><br>
+    院系：<input type="text" id="department" name="department"><br><br>
+    密码：<input type="password" id="password" name="password" required><br><br>
+
+    <button type="submit">确定添加</button>
+</form>
+
+</body>
+</html>

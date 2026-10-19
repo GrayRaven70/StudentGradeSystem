@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>学生成绩管理系统 - 用户列表</title>
+
+    <!-- 1. 引入 Bootstrap 和 DataTables 的 CSS，让表格变漂亮 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <style>
+        body { padding: 20px; }
+        .table-container { max-width: 1000px; margin: 0 auto; }
+    </style>
+</head>
+<body>
+
+<div class="table-container">
+    <!-- 顶部工具栏 -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h3>用户信息列表</h3>
+        <button onclick="addRecord()" class="btn btn-primary">添加用户</button>
+    </div>
+
+    <!-- 表格结构 -->
+    <table id="myTable" class="table table-striped table-bordered table-hover" style="width:100%">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>学号/工号</th>
+            <th>姓名</th>
+            <th>用户组</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- 数据会通过 JS 动态插入到这里 -->
+        </tbody>
+    </table>
+</div>
+
+<!-- 2. 引入 jQuery 和 DataTables 的 JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    var dataTableInstance = null;
+
+    // 跳转到添加页 (改成你的新页面)
+    function addRecord() {
+        window.location.href = "user_add.html";
+    }
+
+    // 跳转到修改页 (改成你的新页面)
+    function modifyRecord(id) {
+        window.location.href = "user_modify.html?id=" + id;
+    }
+
+    // 删除记录
+    function deleteRecord(id) {
+        if (confirm("您确定要删除这个用户吗？")) {
+            // ★ 修改1：去掉 ../../，改为后端对应的新路径
+            var url = "user_delete";
+            var data = {"id": id};
+            $.post(url, data, function (res) {
+                if (res.result_code == 0) {
+                    alert("删除成功！");
+                    getRecord(); // 局部刷新表格
+                } else {
+                    alert("删除失败：" + res.result_msg);
+                }
+            });
+        }
+    }
+
+    /*-------------------- 从后端获取数据并渲染表格 --------------------*/
+    function getRecord() {
+        // ★ 修改2：去掉 ../../，改为后端对应的新路径
+        var url = "user_query";
+        var data = {}; // 查询全部不需要传参数
+
+        $.post(url, data, function (res) {
+            if (res.result_code == 0) {
+                var list = res.aaData;
+
+                if (dataTableInstance) {
+                    dataTableInstance.destroy();
+                }
+
+                $("#myTable tbody").empty();
+
+                if (list != undefined && list.length > 0) {
+                    for (var i = 0; i < list.length; i++) {
+                        var record = list[i];
+
+                        // ★ 修改3：接收新 UserDao 返回的字段名
+                        var id = record.id;
+                        var userNo = record.user_no;
+                        var realName = record.real_name;
+                        var userGroup = record.user_group;
+
+                        var tr = "<tr>";
+                        tr += "<td>" + id + "</td>";
+                        tr += "<td>" + userNo + "</td>";
+                        tr += "<td>" + realName + "</td>";
+                        tr += "<td>" + userGroup + "</td>";
+                        tr += "<td>";
+                        tr += "<button class='btn btn-sm btn-info' onclick='modifyRecord(" + id + ")'>修改</button> ";
+                        tr += "<button class='btn btn-sm btn-danger' onclick='deleteRecord(" + id + ")'>删除</button>";
+                        tr += "</td>";
+                        tr += "</tr>";
+
+                        $("#myTable tbody").append(tr);
+                    }
+                }
+
+                dataTableInstance = $('#myTable').DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "pageLength": 10,
+                    "oLanguage": {
+                        "sProcessing": "处理中...",
+                        "sLengthMenu": "每页 _MENU_ 条记录",
+                        "sZeroRecords": "没有匹配的记录",
+                        "sInfo": "显示第 _START_ 至 _END_ 项记录，共 _TOTAL_ 项",
+                        "sInfoEmpty": "显示第 0 至 0 项记录，共 0 项",
+                        "sInfoFiltered": "(由 _MAX_ 项记录过滤)",
+                        "sSearch": "搜索:",
+                        "oPaginate": {
+                            "sFirst": "首页",
+                            "sPrevious": "上页",
+                            "sNext": "下页",
+                            "sLast": "末页"
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        getRecord();
+    });
+</script>
+
+</body>
+</html>

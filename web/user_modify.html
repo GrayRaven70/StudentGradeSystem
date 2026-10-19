@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>修改用户信息</title>
+    <!-- 引入一点基础样式，让表单好看点 -->
+    <style>
+        body { padding: 20px; font-family: sans-serif; }
+        .form-box { max-width: 400px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: inline-block; width: 80px; }
+        .form-group input, .form-group select { width: 250px; padding: 5px; }
+        .btn { padding: 8px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="form-box">
+    <h3>修改用户信息</h3>
+    <!-- ★ 把 action 改成了 user_modify -->
+    <form id="modify_record_form" name="modify_record_form" method="post">
+        <input type="hidden" id="id" name="id" value=""/>
+
+        <div class="form-group">
+            <label>工号/学号：</label>
+            <input type="text" id="user_no" name="user_no" value="" required>
+        </div>
+
+        <div class="form-group">
+            <label>姓名：</label>
+            <input type="text" id="real_name" name="real_name" value="" required>
+        </div>
+
+        <div class="form-group">
+            <label>用户组：</label>
+            <select id="user_group" name="user_group">
+                <option value="学生">学生</option>
+                <option value="教师">教师</option>
+                <option value="管理员">管理员</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>院系：</label>
+            <input type="text" id="department" name="department" value="">
+        </div>
+
+        <div class="form-group">
+            <label>密码：</label>
+            <input type="text" id="password" name="password" value="">
+        </div>
+
+        <button type="button" class="btn" onclick="submitModifyRecord();">递交修改</button>
+    </form>
+    <div id="record_list_div" style="margin-top: 15px; color: green;"></div>
+</div>
+
+</body>
+</html>
+
+<!-- ★ 引入你本地或者线上的 jQuery（既然之前用了 1.8.3 的本地文件，这里保持，路径去掉了 ../../） -->
+<script src="assets/js/jquery-1.8.3.min.js"></script>
+<script>
+    var id = undefined;
+
+    // 提交修改
+    function submitModifyRecord() {
+        var data = {"id": id};
+        data.user_no = $("#user_no").val();
+        data.real_name = $("#real_name").val();
+        data.user_group = $("#user_group").val();
+        data.department = $("#department").val();
+        data.password = $("#password").val();
+
+        setRecord(data);
+    }
+
+    /*-------------------- 从后端获取数据回显 --------------------*/
+    function getRecord(id) {
+        var url = "user_query"; // 去掉了 ../../
+        var data = {"id": id};
+        $.post(url, data, function (res) {
+            if (res.result_code == 0) {
+                var list = res.aaData;
+                if (list != undefined && list.length > 0) {
+                    var record = list[0]; // 只取第一条
+
+                    // 把数据填入表单
+                    $("#id").val(record.id);
+                    $("#user_no").val(record.user_no);
+                    $("#real_name").val(record.real_name);
+                    $("#user_group").val(record.user_group);
+                    $("#department").val(record.department);
+                    $("#password").val(record.password);
+                }
+            }
+        });
+    }
+
+    // 获取 URL 参数
+    var getUrlParam = function (name){
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if(r != null) return decodeURI(r[2]); return null;
+    }
+
+    // 初始化
+    function init(){
+        id = getUrlParam("id");
+        if (id) {
+            getRecord(id);
+        } else {
+            alert("缺少参数 ID");
+        }
+    }
+    init();
+
+    /*----------------------- 向后端提交修改 -----------------------*/
+    function setRecord(data){
+        var url = "user_modify"; // 去掉了 ../../
+        $.post(url, data, function(res){
+            if(res.result_code == 0){
+                $("#record_list_div").html("修改成功！<button onclick='javascript:goUserList();'>返回列表</button>");
+            }else{
+                $("#record_list_div").html("修改失败！" + res.result_msg);
+            }
+        });
+    }
+
+    // 返回列表
+    function goUserList(){
+        window.location.href = "user_list.html";
+    }
+
+</script>

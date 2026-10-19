@@ -50,8 +50,3 @@ private static final String URL =
    - 将 `Application context` 设置为 `/StudentGradeSystem`。
 4. 点击运行按钮启动服务器。
 5. 在浏览器中访问：`http://localhost:8080/StudentGradeSystem/user_list.html`
-
-
-│   ├── user_add.html    # 添加用户（前端页面）
-│   └── user_modify.html # 修改用户（前端页面）
-└── pom.xml              # Maven 依赖配置

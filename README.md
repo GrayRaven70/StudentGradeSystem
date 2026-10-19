@@ -34,13 +34,7 @@ CREATE TABLE `sys_user` (
 ```
 
 ### 3. 修改数据库连接信息
-打开项目中的 `src/main/java/UserDao.java` 文件，找到以下代码：
-
-private static final String URL =
-        "jdbc:mysql://localhost:3366/sgs?user=root&password=123&useUnicode=true&characterEncoding=UTF-8";
-
-> ⚠️ **注意**：请根据你本机的实际情况修改。默认端口是 `3306`，如果你的 MySQL 端口是默认的，请把 `3366` 改成 `3306`；同时把 `user=root` 和 `password=123` 改为你本地数据库的账号密码。
-
+打开项目中的 `src/main/java/UserDao.java` 文件，根据你本机的实际情况修改端口号，用户名及密码
 ### 4. 在 IDEA 中运行
 1. 使用 IntelliJ IDEA 打开本项目文件夹。
 2. 等待 Maven 自动下载依赖。

@@ -19,6 +19,7 @@
     <!-- 顶部工具栏 -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <h3>用户信息列表</h3>
+        <button onclick="logout()" class="btn btn-danger">注销登录</button>
         <button onclick="addRecord()" class="btn btn-primary">添加用户</button>
     </div>
 
@@ -143,6 +144,12 @@
     $(document).ready(function() {
         getRecord();
     });
+
+    function logout() {
+        if (confirm("确定要退出登录吗？")) {
+            window.location.href = "logout";
+        }
+    }
 </script>
 
 </body>

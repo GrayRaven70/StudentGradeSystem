@@ -4,8 +4,23 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
                              https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
+
+    <!-- 手动注册拦截器 -->
+    <filter>
+        <filter-name>AdminFilter</filter-name>
+        <filter-class>org.example.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AdminFilter</filter-name>
+        <!-- 拦截所有以 .html 结尾的请求（或者你可以明确写 /user_list.html） -->
+        <url-pattern>/user_list.html</url-pattern>
+        <url-pattern>/user_add.html</url-pattern>
+        <url-pattern>/user_modify.html</url-pattern>
+    </filter-mapping>
+
 </web-app>

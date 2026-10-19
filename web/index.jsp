@@ -64,7 +64,7 @@
 
     <div class="btn-group">
         <!-- 使用 ctx 拼接路径，点击跳转到对应的 HTML 页面 -->
-        <a href="<%=ctx%>/admin_login.html" class="btn btn-admin">管理员登录</a>
+        <a href="<%=ctx%>/admin_login.jsp" class="btn btn-admin">管理员登录</a>
         <a href="<%=ctx%>/teacher_login.html" class="btn btn-teacher">教师登录</a>
         <a href="<%=ctx%>/student_login.html" class="btn btn-student">学生登录</a>
     </div>

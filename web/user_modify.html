@@ -61,75 +61,88 @@
 <!-- ★ 引入你本地或者线上的 jQuery（既然之前用了 1.8.3 的本地文件，这里保持，路径去掉了 ../../） -->
 <script src="assets/js/jquery-1.8.3.min.js"></script>
 <script>
-    var id = undefined;
-
-    // 提交修改
-    function submitModifyRecord() {
-        var data = {"id": id};
-        data.user_no = $("#user_no").val();
-        data.real_name = $("#real_name").val();
-        data.user_group = $("#user_group").val();
-        data.department = $("#department").val();
-        data.password = $("#password").val();
-
-        setRecord(data);
+    <!-- 优先使用本地，找不到就换用线上，确保 jQuery 一定加载成功 -->
+    <script src="assets/js/jquery-1.8.3.min.js"></script>
+<script>
+    // 如果本地 jQuery 没加载成功，用线上的
+    if (typeof jQuery === 'undefined') {
+        document.write('<script src="https://code.jquery.com/jquery-3.7.0.min.js"><\/script>');
     }
+</script>
 
-    /*-------------------- 从后端获取数据回显 --------------------*/
-    function getRecord(id) {
-        var url = "user_query"; // 去掉了 ../../
-        var data = {"id": id};
-        $.post(url, data, function (res) {
-            if (res.result_code == 0) {
-                var list = res.aaData;
-                if (list != undefined && list.length > 0) {
-                    var record = list[0]; // 只取第一条
+<script>
+    $(function() { // 页面加载完成后执行
+        var urlId = getUrlParam("id");
+        if (urlId) {
+            getRecord(urlId);
+        } else {
+            alert("缺少参数 ID，请从列表页点击修改进入！");
+            window.location.href = "user_list.html";
+        }
+    });
 
-                    // 把数据填入表单
-                    $("#id").val(record.id);
-                    $("#user_no").val(record.user_no);
-                    $("#real_name").val(record.real_name);
-                    $("#user_group").val(record.user_group);
-                    $("#department").val(record.department);
-                    $("#password").val(record.password);
+    function submitModifyRecord() {
+        var recordId = $("#id").val(); // 从隐藏域获取ID
+        console.log("准备提交的 ID:", recordId);
+
+        if (!recordId) {
+            alert("无法获取用户 ID，请刷新页面重试！");
+            return;
+        }
+
+        // 收集表单数据
+        var data = {
+            "id": recordId,
+            "user_no": $("#user_no").val(),
+            "real_name": $("#real_name").val(),
+            "user_group": $("#user_group").val(),
+            "department": $("#department").val(),
+            "password": $("#password").val()
+        };
+        console.log("准备提交的数据:", data);
+
+        // 发送请求
+        $.ajax({
+            url: "user_modify",
+            type: "POST",
+            data: data,
+            success: function(res) {
+                console.log("后端返回:", res);
+                if (res.result_code == 0) {
+                    alert("修改成功！点击确定返回列表页。");
+                    window.location.href = "user_list.html";
+                } else {
+                    // 如果失败，把原因显示在页面上，不要静默
+                    $("#record_list_div").html("<span style='color:red; font-weight:bold;'>修改失败：" + res.result_msg + "</span>");
                 }
+            },
+            error: function(xhr, status, error) {
+                console.error("请求失败:", error);
+                alert("请求后端失败！请检查是否按了 F12 看到 404 或 500 错误。");
             }
         });
     }
 
-    // 获取 URL 参数
-    var getUrlParam = function (name){
+    function getRecord(id) {
+        $.post("user_query", {"id": id}, function (res) {
+            if (res.result_code == 0 && res.aaData.length > 0) {
+                var record = res.aaData[0];
+                $("#id").val(record.id);
+                $("#user_no").val(record.user_no);
+                $("#real_name").val(record.real_name);
+                $("#user_group").val(record.user_group);
+                $("#department").val(record.department);
+                $("#password").val(record.password);
+            } else {
+                alert("查询不到该用户信息，可能已被删除！");
+            }
+        });
+    }
+
+    function getUrlParam(name) {
         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
         var r = window.location.search.substr(1).match(reg);
         if(r != null) return decodeURI(r[2]); return null;
     }
-
-    // 初始化
-    function init(){
-        id = getUrlParam("id");
-        if (id) {
-            getRecord(id);
-        } else {
-            alert("缺少参数 ID");
-        }
-    }
-    init();
-
-    /*----------------------- 向后端提交修改 -----------------------*/
-    function setRecord(data){
-        var url = "user_modify"; // 去掉了 ../../
-        $.post(url, data, function(res){
-            if(res.result_code == 0){
-                $("#record_list_div").html("修改成功！<button onclick='javascript:goUserList();'>返回列表</button>");
-            }else{
-                $("#record_list_div").html("修改失败！" + res.result_msg);
-            }
-        });
-    }
-
-    // 返回列表
-    function goUserList(){
-        window.location.href = "user_list.html";
-    }
-
+</script>
 </script>

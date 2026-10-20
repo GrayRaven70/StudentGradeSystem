@@ -1,3 +1,4 @@
+package org.example;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +9,7 @@ public class UserDao {
 
     // 数据库连接信息（保持你原来的端口和账号密码）
     private static final String URL =
-            "jdbc:mysql://localhost:端口号/sgs?user=用户名&password=密码&useUnicode=true&characterEncoding=UTF-8";
+            "jdbc:mysql://localhost:端口/sgs?user=用户名&password=密码&useUnicode=true&characterEncoding=UTF-8";
 
     static {
         try {
@@ -110,6 +111,61 @@ public class UserDao {
             e.printStackTrace();
         }
         return list;
+    }
+
+    // ========== 6. 教师/学生登录验证 ==========
+    public Map<String, String> login(String userNo, String password) {
+        String sql = "select id, user_no, real_name, user_group, department from sys_user where user_no=? and password=?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userNo);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, String> user = new HashMap<>();
+                    user.put("id", rs.getString("id"));
+                    user.put("user_no", rs.getString("user_no"));
+                    user.put("real_name", rs.getString("real_name"));
+                    user.put("user_group", rs.getString("user_group"));
+                    user.put("department", rs.getString("department"));
+                    return user; // 登录成功，返回用户信息
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // 登录失败
+    }
+
+    // ========== 7. 修改密码 ==========
+    public boolean updatePassword(String userNo, String oldPassword, String newPassword) {
+        // 先验证旧密码对不对
+        String checkSql = "select id from sys_user where user_no=? and password=?";
+        // 再更新新密码
+        String updateSql = "update sys_user set password=? where user_no=?";
+
+        try (Connection conn = getConnection()) {
+            // 1. 检查旧密码
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setString(1, userNo);
+                ps.setString(2, oldPassword);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        return false; // 旧密码错误
+                    }
+                }
+            }
+            // 2. 更新密码
+            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                ps.setString(1, newPassword);
+                ps.setString(2, userNo);
+                ps.executeUpdate();
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     // 工具方法：把结果集转为 Map（不含密码）

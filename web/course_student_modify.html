@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>课程学生管理</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <style> body { padding: 20px; background-color: #f8f9fa; } .table-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); } </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 id="pageTitle">课程学生管理</h3>
+    <div>
+      <!-- 管理模式才显示“新增” -->
+      <button class="btn btn-success" id="btnAddStudent" onclick="addStudent()">新增学生</button>
+      <!-- 查看模式才显示“导出” -->
+      <button class="btn btn-info" id="btnExport" onclick="exportScores()" style="display:none;">导出成绩单</button>
+      <button class="btn btn-secondary" onclick="window.location.href='course_list.html'">返回课程列表</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table id="studentTable" class="table table-striped table-bordered table-hover" style="width:100%">
+      <thead>
+      <tr>
+        <th>学号</th>
+        <th>姓名</th>
+        <th>成绩</th>
+        <th class="action-col">操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <!-- 动态加载 -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  var dataTableInstance = null;
+  var urlParams = new URLSearchParams(window.location.search);
+  var courseId = urlParams.get('course_id');
+  var mode = urlParams.get('mode'); // 'modify' 或 'view'
+
+  $(document).ready(function() {
+    if(!courseId) {
+      alert("缺少课程ID！");
+      window.location.href = "course_list.html";
+      return;
+    }
+
+    // 根据模式调整界面
+    if (mode === 'view') {
+      $('#pageTitle').text("查看学生成绩 (只读)");
+      $('#btnAddStudent').hide();
+      $('#btnExport').show();
+      $('.action-col').hide(); // 隐藏操作列
+    }
+
+    loadStudents();
+  });
+
+  function loadStudents() {
+    $.post("course_student_query", {"course_id": courseId}, function(res) {
+      if (res.result_code === 0) {
+        var list = res.aaData;
+        if (dataTableInstance) dataTableInstance.destroy();
+        $("#studentTable tbody").empty();
+
+        for (var i = 0; i < list.length; i++) {
+          var s = list[i];
+          var tr = "<tr>";
+          tr += "<td>" + s.user_no + "</td>";
+          tr += "<td>" + s.real_name + "</td>";
+          // 成绩显示红色代表未录入，正常显示绿色
+          if(s.score === 'null') {
+            tr += "<td><span class='text-danger'>未录入</span></td>";
+          } else {
+            tr += "<td><span class='text-success fw-bold'>" + s.score + "</span></td>";
+          }
+
+          tr += "<td class='action-col'>";
+          tr += "<button class='btn btn-sm btn-primary me-1' onclick='modifyScore(\"" + s.relation_id + "\", \"" + s.score + "\")'>修改成绩</button>";
+          tr += "<button class='btn btn-sm btn-danger' onclick='removeStudent(\"" + s.relation_id + "\")'>删除</button>";
+          tr += "</td>";
+          tr += "</tr>";
+          $("#studentTable tbody").append(tr);
+        }
+
+        dataTableInstance = $('#studentTable').DataTable({
+          "pageLength": 10,
+          "oLanguage": { "sSearch": "搜索学号或姓名:", "sZeroRecords": "暂无学生" }
+        });
+      }
+    });
+  }
+
+  // 新增学生
+  function addStudent() {
+    var studentNo = prompt("请输入要添加的学生学号：");
+    if (!studentNo) return;
+
+    $.post("course_student_add", {"course_id": courseId, "student_no": studentNo}, function(res) {
+      if (res.result_code === 0) {
+        alert("添加成功！");
+        loadStudents();
+      } else {
+        alert("添加失败：" + res.result_msg);
+      }
+    });
+  }
+
+  // 修改成绩
+  function modifyScore(relationId, currentScore) {
+    var newScore = prompt("请输入新成绩（留空表示未录入/清除成绩）：", currentScore === 'null' ? '' : currentScore);
+    if (newScore === null) return; // 点了取消
+
+    // 校验只能输入数字
+    if (newScore !== "" && isNaN(newScore)) {
+      return alert("请输入有效的数字！");
+    }
+
+    $.post("course_student_update_score", {"relation_id": relationId, "score": newScore}, function(res) {
+      if (res.result_code === 0) {
+        loadStudents(); // 静默刷新
+      } else {
+        alert("更新失败：" + res.result_msg);
+      }
+    });
+  }
+
+  // 移除学生
+  function removeStudent(relationId) {
+    if (confirm("确定要将该学生从本课程移除吗？")) {
+      $.post("course_student_delete", {"relation_id": relationId}, function(res) {
+        if (res.result_code === 0) {
+          loadStudents();
+        } else {
+          alert("移除失败！");
+        }
+      });
+    }
+  }
+
+  // 导出成绩（利用跳转让浏览器下载）
+  function exportScores() {
+    window.location.href = "course_student_export?course_id=" + courseId;
+  }
+</script>
+</body>
+</html>

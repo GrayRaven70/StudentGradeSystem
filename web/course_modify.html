@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>修改课程信息</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style> body { padding: 20px; background-color: #f8f9fa; } .form-box { max-width: 800px; margin: 0 auto; } </style>
+</head>
+<body>
+
+<div class="form-box">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>修改课程信息</h3>
+    <button class="btn btn-secondary" onclick="window.location.href='course_list.html'">返回列表</button>
+  </div>
+
+  <!-- 课程基本信息 -->
+  <div class="card p-4 mb-4 shadow-sm">
+    <h5>基本信息</h5>
+    <hr>
+    <input type="hidden" id="courseId" value="">
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label>课程号：</label>
+        <input type="text" id="courseNo" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label>课序号：</label>
+        <input type="text" id="courseSeqNo" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label>课程名：</label>
+        <input type="text" id="courseName" class="form-control">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveBaseInfo()">保存基本信息</button>
+  </div>
+
+  <!-- 任课教师管理 -->
+  <div class="card p-4 shadow-sm">
+    <h5>任课教师列表</h5>
+    <hr>
+    <!-- 添加教师 -->
+    <div class="input-group mb-3" style="max-width: 400px;">
+      <input type="text" id="newTeacherNo" class="form-control" placeholder="输入教师工号（如 T001）...">
+      <button class="btn btn-success" onclick="addTeacher()">新增任课教师</button>
+    </div>
+
+    <!-- 教师表格 -->
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+      <tr>
+        <th>教师姓名</th>
+        <th>工号</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody id="teacherList">
+      <!-- Ajax 动态加载 -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+  var urlId = new URLSearchParams(window.location.search).get('id');
+
+  $(document).ready(function() {
+    if(!urlId) {
+      alert("缺少课程ID！");
+      window.location.href = "course_list.html";
+      return;
+    }
+    loadCourseInfo();
+  });
+
+  // 回显数据
+  function loadCourseInfo() {
+    $.post("course_query", {"id": urlId}, function(res) {
+      if(res.result_code === 0) {
+        var c = res.data;
+        $("#courseId").val(c.id);
+        $("#courseNo").val(c.course_no);
+        $("#courseSeqNo").val(c.course_seq_no);
+        $("#courseName").val(c.course_name);
+      } else {
+        alert("获取课程信息失败！");
+      }
+    });
+  }
+
+  // 保存基本信息
+  function saveBaseInfo() {
+    var data = {
+      "id": $("#courseId").val(),
+      "course_no": $("#courseNo").val(),
+      "course_seq_no": $("#courseSeqNo").val(),
+      "course_name": $("#courseName").val()
+    };
+    $.post("course_modify", data, function(res) {
+      if(res.result_code === 0) {
+        alert("保存成功！");
+      } else {
+        alert("保存失败：" + res.result_msg);
+      }
+    });
+  }
+
+  // 页面加载时，除了加载基本信息，还要加载教师列表
+  $(document).ready(function() {
+    if(!urlId) {
+      alert("缺少课程ID！");
+      window.location.href = "course_list.html";
+      return;
+    }
+    loadCourseInfo();
+    loadTeachers(); // ★ 新增：加载教师
+  });
+
+  // ====== 新增：加载教师列表 ======
+  function loadTeachers() {
+    $.post("course_teacher_query", {"course_id": urlId}, function(res) {
+      if(res.result_code === 0) {
+        var list = res.aaData;
+        $("#teacherList").empty();
+        if(list.length === 0) {
+          $("#teacherList").append("<tr><td colspan='3' class='text-center text-muted'>暂无任课教师</td></tr>");
+        } else {
+          for(var i=0; i<list.length; i++) {
+            var t = list[i];
+            var tr = "<tr>";
+            tr += "<td>" + t.real_name + "</td>";
+            tr += "<td>" + t.user_no + "</td>";
+            tr += "<td><button class='btn btn-sm btn-danger' onclick='removeTeacher(\"" + t.relation_id + "\")'>删除</button></td>";
+            tr += "</tr>";
+            $("#teacherList").append(tr);
+          }
+        }
+      }
+    });
+  }
+
+  // ====== 新增：添加教师 ======
+  function addTeacher() {
+    var teacherNo = $("#newTeacherNo").val();
+    if(!teacherNo) return alert("请输入教师工号！");
+
+    $.post("course_teacher_add", {"course_id": urlId, "teacher_no": teacherNo}, function(res) {
+      if(res.result_code === 0) {
+        alert("添加成功！");
+        $("#newTeacherNo").val(""); // 清空输入框
+        loadTeachers(); // 刷新教师列表
+      } else {
+        alert("添加失败：" + res.result_msg);
+      }
+    });
+  }
+
+  // ====== 新增：移除教师 ======
+  function removeTeacher(relationId) {
+    if(confirm("确定要将该教师从这门课移除吗？")) {
+      $.post("course_teacher_delete", {"relation_id": relationId}, function(res) {
+        if(res.result_code === 0) {
+          alert("移除成功！");
+          loadTeachers(); // 刷新教师列表
+        } else {
+          alert("移除失败：" + res.result_msg);
+        }
+      });
+    }
+  }
+</script>
+</body>
+</html>

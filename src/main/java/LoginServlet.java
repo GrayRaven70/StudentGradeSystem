@@ -23,7 +23,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("role", "admin");
 
             // 跳转到列表页
-            response.sendRedirect(request.getContextPath() + "/user_list.html");
+            response.sendRedirect(request.getContextPath() + "/admin_dashboard.html");
         } else {
             // 验证失败，带着错误信息退回登录页
             request.setAttribute("error", "账号或密码错误！");

@@ -1,0 +1,24 @@
+package org.example;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+import org.json.JSONObject;
+import java.io.IOException;
+
+@WebServlet("/course_teacher_delete")
+public class CourseTeacherDeleteServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String relationId = request.getParameter("relation_id");
+
+        CourseDao dao = new CourseDao();
+        boolean success = dao.removeTeacher(relationId);
+
+        JSONObject json = new JSONObject();
+        json.put("result_code", success ? 0 : 1);
+        json.put("result_msg", success ? "移除成功" : "移除失败");
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().print(json);
+    }
+}

@@ -25,7 +25,7 @@ public class add extends HttpServlet {
         System.out.println("[add] 收到密码：" + password);
 
         // 2. 调用 DAO 把数据存入数据库
-        UserDao dao = new UserDao();
+        org.example.UserDao dao = new org.example.UserDao();
         dao.add(userNo, realName, userGroup, department, password);
 
         // 3. 添加成功后，跳转回列表页（必须加 getContextPath 防止 404）

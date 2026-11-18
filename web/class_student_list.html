@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><title>班级学生信息</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <style>body{padding:20px;background:#f8f9fa;}.table-container{background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);}</style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>班级学生信息</h3>
+    <div>
+      <button class="btn btn-success" onclick="addStudent()">添加学生</button>
+      <button class="btn btn-info" onclick="exportStudents()">导出名单</button>
+      <button class="btn btn-secondary" onclick="window.location.href='class_list.html'">返回班级列表</button>
+    </div>
+  </div>
+  <div class="table-container">
+    <div class="input-group mb-3" style="max-width:400px;">
+      <input type="text" id="kw" class="form-control" placeholder="搜索学号或姓名...">
+      <button class="btn btn-primary" onclick="loadStudents()">搜索</button>
+      <button class="btn btn-outline-secondary" onclick="$('#kw').val('');loadStudents();">清空</button>
+    </div>
+    <table id="studentTable" class="table table-striped table-bordered table-hover" style="width:100%">
+      <thead><tr><th>ID</th><th>学号</th><th>姓名</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  var classId = new URLSearchParams(location.search).get('class_id');
+  var dt = null;
+  if (!classId) { alert("缺少班级ID"); location.href = "class_list.html"; }
+  function loadStudents() {
+    $.post("class_student_query", {class_id: classId, keyword: $("#kw").val()}, function(res) {
+      if (res.result_code !== 0) return alert("加载失败");
+      if (dt) dt.destroy();
+      $("#studentTable tbody").empty();
+      res.aaData.forEach(function(s) {
+        var tr = "<tr>";
+        tr += "<td>" + s.id + "</td>";
+        tr += "<td>" + s.user_no + "</td>";
+        tr += "<td>" + s.real_name + "</td>";
+        tr += "<td>";
+        tr += "<button class='btn btn-sm btn-primary me-1' onclick='viewCourses(" + s.id + ", \"" + s.user_no + "\")'>查看</button>";
+        tr += "<button class='btn btn-sm btn-danger' onclick='delStudent(" + s.id + ")'>删除</button>";
+        tr += "</td></tr>";
+        $("#studentTable tbody").append(tr);
+      });
+      dt = $("#studentTable").DataTable({
+        pageLength: 10, searching: false,
+        oLanguage: {sZeroRecords: "暂无学生", oPaginate: {sPrevious:"上页", sNext:"下页"}}
+      });
+    });
+  }
+  function addStudent() {
+    var no = prompt("请输入要添加的学生学号：");
+    if (!no) return;
+    $.post("class_student_add", {class_id: classId, student_no: no}, function(res) {
+      if (res.result_code === 0) { alert("添加成功"); loadStudents(); }
+      else alert("添加失败：" + res.result_msg);
+    });
+  }
+  function delStudent(sid) {
+    if (!confirm("确定将该学生移出本班？")) return;
+    $.post("class_student_delete", {class_id: classId, student_id: sid}, function(res) {
+      if (res.result_code === 0) { alert("移出成功"); loadStudents(); }
+      else alert("移出失败：" + res.result_msg);
+    });
+  }
+  function exportStudents() {
+    window.location.href = "class_student_export?class_id=" + classId;
+  }
+  function viewCourses(sid, sno) {
+    window.location.href = "student_course_list.html?student_id=" + sid + "&student_no=" + encodeURIComponent(sno);
+  }
+  $(loadStudents);
+</script>
+</body>
+</html>

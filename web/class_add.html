@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"><title>新建班级</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>body{padding:50px;background:#f8f9fa;}.form-box{max-width:500px;margin:0 auto;background:#fff;padding:30px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);}</style>
+</head>
+<body>
+<div class="form-box">
+  <h3 class="mb-4">新建班级</h3>
+  <div class="mb-3"><label>班级编号 <span class="text-danger">*</span></label>
+    <input type="text" id="class_no" class="form-control" placeholder="例如：C2024001"></div>
+  <div class="mb-3"><label>班级名称 <span class="text-danger">*</span></label>
+    <input type="text" id="class_name" class="form-control" placeholder="例如：软件工程2024级1班"></div>
+  <div class="mb-3"><label>班主任工号（可留空）</label>
+    <input type="text" id="head_teacher_no" class="form-control" placeholder="例如：T001"></div>
+  <button class="btn btn-success w-100" onclick="submitForm()">确认创建</button>
+  <button class="btn btn-secondary w-100 mt-2" onclick="window.location.href='class_list.html'">返回列表</button>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+  function submitForm() {
+    var data = {
+      class_no: $("#class_no").val(),
+      class_name: $("#class_name").val(),
+      head_teacher_no: $("#head_teacher_no").val()
+    };
+    if (!data.class_no || !data.class_name) return alert("班级编号和名称不能为空");
+    $.post("class_add", data, function(res) {
+      if (res.result_code === 0) { alert("创建成功"); window.location.href = "class_list.html"; }
+      else alert("创建失败：" + res.result_msg);
+    });
+  }
+</script>
+</body>
+</html>

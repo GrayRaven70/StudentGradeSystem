@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>我的课程</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <style> body{padding:20px;background:#f8f9fa;} .table-container{background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);} </style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>我的课程</h3>
+    <div>
+      <button class="btn btn-info" onclick="exportCourses()">导出我的课程</button>
+      <button class="btn btn-secondary" onclick="location.href='teacher_dashboard.html'">返回</button>
+    </div>
+  </div>
+  <div class="table-container">
+    <div class="input-group mb-3" style="max-width:400px;">
+      <input type="text" id="kw" class="form-control" placeholder="搜索课程号/课序号/课程名...">
+      <button class="btn btn-primary" onclick="loadCourses()">搜索</button>
+      <button class="btn btn-outline-secondary" onclick="$('#kw').val('');loadCourses();">清空</button>
+    </div>
+    <table id="courseTable" class="table table-striped table-bordered table-hover" style="width:100%">
+      <thead><tr><th>课程号</th><th>课序号</th><th>课程名</th><th>平均分</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  var dt = null;
+  function loadCourses() {
+    $.post("teacher_course_query", {keyword: $("#kw").val()}, function(res) {
+      if (res.result_code !== 0) { alert("加载失败：" + res.result_msg); return; }
+      if (dt) dt.destroy();
+      $("#courseTable tbody").empty();
+      res.aaData.forEach(function(c) {
+        var tr = "<tr>";
+        tr += "<td>" + c.course_no + "</td>";
+        tr += "<td>" + c.course_seq_no + "</td>";
+        tr += "<td>" + c.course_name + "</td>";
+        tr += "<td>" + c.avg_score + "</td>";
+        tr += "<td>";
+        tr += "<button class='btn btn-sm btn-primary me-1' onclick='modifyStu(" + c.id + ")'>修改学生信息</button>";
+        tr += "<button class='btn btn-sm btn-secondary' onclick='viewStu(" + c.id + ")'>查看</button>";
+        tr += "</td></tr>";
+        $("#courseTable tbody").append(tr);
+      });
+      dt = $("#courseTable").DataTable({
+        pageLength: 10, searching: false,
+        oLanguage: {sZeroRecords: "暂无课程", oPaginate: {sPrevious:"上页", sNext:"下页"}}
+      });
+    });
+  }
+  function modifyStu(id) { location.href = "teacher_course_student.html?course_id=" + id + "&mode=modify"; }
+  function viewStu(id)   { location.href = "teacher_course_student.html?course_id=" + id + "&mode=view"; }
+  function exportCourses() {
+    location.href = "teacher_course_export?keyword=" + encodeURIComponent($("#kw").val());
+  }
+  $(loadCourses);
+</script>
+</body>
+</html>

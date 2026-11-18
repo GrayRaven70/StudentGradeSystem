@@ -1,38 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8"><title>我的班级</title>
+  <meta charset="UTF-8">
+  <title>我的班级</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <style>body{padding:20px;background:#f8f9fa;}</style>
+  <style> body{padding:20px;background:#f8f9fa;} .table-container{background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);} </style>
 </head>
 <body>
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>我担任班主任的班级</h3>
+    <h3>我的班级</h3>
     <button class="btn btn-secondary" onclick="location.href='teacher_dashboard.html'">返回</button>
   </div>
-  <table class="table table-bordered table-hover bg-white">
-    <thead class="table-light"><tr><th>ID</th><th>班级编号</th><th>班级名称</th><th>操作</th></tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
+  <div class="table-container">
+    <div class="input-group mb-3" style="max-width:400px;">
+      <input type="text" id="kw" class="form-control" placeholder="搜索班级编号/名称...">
+      <button class="btn btn-primary" onclick="loadClasses()">搜索</button>
+      <button class="btn btn-outline-secondary" onclick="$('#kw').val('');loadClasses();">清空</button>
+    </div>
+    <table class="table table-bordered table-hover" id="tb">
+      <thead class="table-light"><tr><th>班级编号</th><th>班级名称</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script>
-  $(function() {
+  function loadClasses() {
     $.post("teacher_class_query", {}, function(res) {
-      if (res.result_code !== 0) return alert("加载失败：" + res.result_msg);
-      if (res.aaData.length === 0) {
-        $("#tbody").append("<tr><td colspan='4' class='text-center text-muted'>暂无班级</td></tr>");
+      if (res.result_code !== 0) { alert("加载失败：" + res.result_msg); return; }
+      var kw = $("#kw").val().trim().toLowerCase();
+      var list = res.aaData.filter(function(c) {
+        if (!kw) return true;
+        return (c.class_no || "").toLowerCase().includes(kw)
+                || (c.class_name || "").toLowerCase().includes(kw);
+      });
+      $("#tb tbody").empty();
+      if (list.length === 0) {
+        $("#tb tbody").append("<tr><td colspan='3' class='text-center text-muted'>您没有需要管理的班级</td></tr>");
         return;
       }
-      res.aaData.forEach(function(c) {
-        var tr = "<tr><td>" + c.id + "</td><td>" + c.class_no + "</td><td>" + c.class_name + "</td>";
-        tr += "<td><button class='btn btn-sm btn-primary' onclick='viewStu(" + c.id + ")'>查看学生</button></td></tr>";
-        $("#tbody").append(tr);
+      list.forEach(function(c) {
+        var tr = "<tr>";
+        tr += "<td>" + c.class_no + "</td>";
+        tr += "<td>" + c.class_name + "</td>";
+        tr += "<td><button class='btn btn-sm btn-primary' onclick='viewStu(" + c.id + ")'>查看</button></td>";
+        tr += "</tr>";
+        $("#tb tbody").append(tr);
       });
     });
-  });
-  function viewStu(id) { location.href = "class_student_list.html?class_id=" + id; }
+  }
+  function viewStu(id) { location.href = "class_student_list.html?class_id=" + id + "&readonly=1"; }
+  $(loadClasses);
 </script>
 </body>
 </html>

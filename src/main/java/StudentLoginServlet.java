@@ -38,7 +38,7 @@ public class StudentLoginServlet extends HttpServlet {
             if ("教师".equals(role)) {
                 target = "/teacher_dashboard.html";   // 教师进教师主页面
             } else if ("学生".equals(role)) {
-                target = "/index.jsp";                // 学生暂未开发主页面，维持原行为
+                target = "/student_dashboard.html";                 // 学生进学生主页面
             } else {
                 target = "/index.jsp";                // 其他情况兜底
             }

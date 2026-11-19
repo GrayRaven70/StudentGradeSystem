@@ -20,7 +20,7 @@ public class LoginServlet extends HttpServlet {
             // 验证成功，把用户名存入 Session（作为已登录的凭证）
             HttpSession session = request.getSession();
             session.setAttribute("currentUser", username);
-            session.setAttribute("role", "admin");
+            session.setAttribute("role", "管理员");
 
             // 跳转到列表页
             response.sendRedirect(request.getContextPath() + "/admin_dashboard.html");

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>学生控制台</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body { background-color: #f4f7f6; }
+    .navbar { background-color: #343a40; }
+    .navbar-brand { color: white !important; }
+    .card { transition: transform 0.2s; cursor: pointer; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+    .icon { font-size: 50px; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="#">学生控制台</a>
+    <div class="d-flex">
+      <button class="btn btn-danger btn-sm" onclick="if(confirm('确定退出？'))location.href='logout'">退出登录</button>
+    </div>
+  </div>
+</nav>
+<div class="container mt-5">
+  <div class="row justify-content-center text-center">
+    <div class="col-md-4 mb-4">
+      <div class="card p-5" onclick="location.href='student_account.html'">
+        <div class="icon" style="color:#007bff;">👤</div>
+        <h3>我的账户</h3>
+        <p class="text-muted">查看个人信息与修改密码</p>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card p-5" onclick="location.href='student_score_list.html'">
+        <div class="icon" style="color:#28a745;">📊</div>
+        <h3>我的成绩</h3>
+        <p class="text-muted">查看所有课程成绩与是否及格</p>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card p-5" onclick="location.href='student_my_course_list.html'">
+        <div class="icon" style="color:#ff9800;">📚</div>
+        <h3>我的课程</h3>
+        <p class="text-muted">查看课程与授课教师</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

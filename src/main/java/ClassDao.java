@@ -277,6 +277,18 @@ public class ClassDao {
         return c;
     }
 
+    // 判断某教师是否是某班的班主任
+    public boolean isHeadTeacherOfClass(String classId, String teacherNo) {
+        String sql = "SELECT 1 FROM class c JOIN sys_user u ON c.head_teacher_id = u.id " +
+                "WHERE c.id=? AND u.user_no=?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, classId);
+            ps.setString(2, teacherNo);
+            try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
+        } catch (SQLException e) { e.printStackTrace(); return false; }
+    }
+
     private boolean existsClassNo(String classNo, String excludeId) {
         String sql = excludeId == null
                 ? "SELECT id FROM class WHERE class_no=?"

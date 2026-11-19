@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8"><title>班级学生信息</title>
+  <meta charset="UTF-8">
+  <title>班级学生信息</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-  <style>body{padding:20px;background:#f8f9fa;}.table-container{background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);}</style>
+  <style> body{padding:20px;background:#f8f9fa;} .table-container{background:#fff;padding:20px;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1);} </style>
 </head>
 <body>
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>班级学生信息</h3>
     <div>
-      <button class="btn btn-success" onclick="addStudent()">添加学生</button>
+      <button class="btn btn-success" id="btnAddStudent" onclick="addStudent()">添加学生</button>
       <button class="btn btn-info" onclick="exportStudents()">导出名单</button>
-      <button class="btn btn-secondary" onclick="window.location.href='class_list.html'">返回班级列表</button>
+      <button class="btn btn-secondary" onclick="goBack()">返回</button>
     </div>
   </div>
   <div class="table-container">
@@ -32,12 +33,25 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script>
-  var classId = new URLSearchParams(location.search).get('class_id');
+  var params = new URLSearchParams(location.search);
+  var classId = params.get('class_id');
+  // 教师从"我的班级"进来时带 &readonly=1；管理员进来不带
+  var readonly = params.get('readonly') === '1';
   var dt = null;
-  if (!classId) { alert("缺少班级ID"); location.href = "class_list.html"; }
+
+  if (!classId) { alert("缺少班级ID"); location.href = "index.jsp"; }
+
+  $(function() {
+    // 只读模式：隐藏"添加学生"
+    if (readonly) {
+      $("#btnAddStudent").hide();
+    }
+    loadStudents();
+  });
+
   function loadStudents() {
     $.post("class_student_query", {class_id: classId, keyword: $("#kw").val()}, function(res) {
-      if (res.result_code !== 0) return alert("加载失败");
+      if (res.result_code !== 0) { alert("加载失败：" + res.result_msg); return; }
       if (dt) dt.destroy();
       $("#studentTable tbody").empty();
       res.aaData.forEach(function(s) {
@@ -46,8 +60,12 @@
         tr += "<td>" + s.user_no + "</td>";
         tr += "<td>" + s.real_name + "</td>";
         tr += "<td>";
-        tr += "<button class='btn btn-sm btn-primary me-1' onclick='viewCourses(" + s.id + ", \"" + s.user_no + "\")'>查看</button>";
-        tr += "<button class='btn btn-sm btn-danger' onclick='delStudent(" + s.id + ")'>删除</button>";
+        tr += "<button class='btn btn-sm btn-primary me-1' onclick='viewCourses("
+                + s.id + ", \"" + s.user_no + "\")'>查看</button>";
+        // 只读模式：不渲染"删除"
+        if (!readonly) {
+          tr += "<button class='btn btn-sm btn-danger' onclick='delStudent(" + s.id + ")'>删除</button>";
+        }
         tr += "</td></tr>";
         $("#studentTable tbody").append(tr);
       });
@@ -57,6 +75,7 @@
       });
     });
   }
+
   function addStudent() {
     var no = prompt("请输入要添加的学生学号：");
     if (!no) return;
@@ -65,6 +84,7 @@
       else alert("添加失败：" + res.result_msg);
     });
   }
+
   function delStudent(sid) {
     if (!confirm("确定将该学生移出本班？")) return;
     $.post("class_student_delete", {class_id: classId, student_id: sid}, function(res) {
@@ -72,13 +92,21 @@
       else alert("移出失败：" + res.result_msg);
     });
   }
+
   function exportStudents() {
-    window.location.href = "class_student_export?class_id=" + classId;
+    location.href = "class_student_export?class_id=" + classId;
   }
+
   function viewCourses(sid, sno) {
-    window.location.href = "student_course_list.html?student_id=" + sid + "&student_no=" + encodeURIComponent(sno);
+    location.href = "student_course_list.html?student_id=" + sid
+            + "&student_no=" + encodeURIComponent(sno);
   }
-  $(loadStudents);
+
+  function goBack() {
+    // 教师回"我的班级"，管理员回"班级列表"
+    if (readonly) location.href = "teacher_class_list.html";
+    else location.href = "class_list.html";
+  }
 </script>
 </body>
 </html>
